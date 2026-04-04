@@ -1,0 +1,55 @@
+env:
+  episode_emails: 100          # number of emails per episode
+  n_employees: 5               # simulated employee pool size
+  n_categories: 8              # distinct complaint/query categories
+  confidence_threshold: 0.75   # below this → flag for human review
+  trend_alert_threshold: 30    # % growth in 72h window to trigger alert
+  trend_window_hours: 72
+  seed: 42
+
+sla:
+  critical_hours: 4
+  high_hours: 12
+  medium_hours: 24
+  normal_hours: 48
+  max_employee_load: 10        # max open tickets per employee
+
+rewards:
+  resolve_on_time:      1.0
+  csat_high:            0.8    # CSAT >= 4
+  trend_prevented:      0.6
+  correct_priority:     0.5
+  balanced_assignment:  0.4
+  kb_updated:           0.3
+  missed_deadline:      -1.0
+  bad_autoreply:        -0.8
+  unnecessary_escalation: -0.6
+  misclassification:    -0.5
+  complaint_reopened:   -0.4
+  keyword_flag_missed:  -0.3
+
+email_gen:
+  query_ratio: 0.45            # fraction of emails that are queries
+  keyword_flag_rate: 0.05      # fraction of complaints with legal/escalation flags
+  enterprise_rate: 0.10
+  standard_rate: 0.55
+  free_rate: 0.35
+  categories:
+    - login_failure
+    - billing_dispute
+    - refund_request
+    - product_defect
+    - shipping_delay
+    - account_locked
+    - data_privacy
+    - general_query
+
+employee_sim:
+  base_resolve_rate: 0.7       # probability employee resolves in SLA
+  overload_penalty: 0.3        # resolve_rate reduction when load > 7
+  ignore_probability: 0.05     # probability employee ignores a ticket entirely
+
+monitor:
+  log_csv: true
+  log_path: ./logs/
+  dashboard_refresh_hz: 2
