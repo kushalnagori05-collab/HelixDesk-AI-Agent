@@ -215,8 +215,8 @@ Scores are exact and reproducible with seed=42:
 
 | Agent | easy_classify | medium_sla | hard_trend |
 |---|---|---|---|
-| random | 0.000 | 1.000 | 0.094 |
-| rule   | 1.000 | 1.000 | 0.027 |
+| random | 0.000 | 0.448 | 0.415 |
+| rule   | 1.000 | 0.882 | 0.652 |
 
 Run `python baseline.py` to reproduce exactly.
 
