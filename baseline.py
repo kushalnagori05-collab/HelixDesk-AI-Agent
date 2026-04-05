@@ -152,7 +152,7 @@ def run_baseline():
         results[agent_name] = {}
         for task_name, task_module in tasks.items():
             console.print(f"  Running [cyan]{task_name}[/cyan] with [green]{agent_name}[/green]...", end=" ")
-            score = task_module.grade(env=None, agent=agent)
+            score = task_module.grade(env=env, agent=agent)
             results[agent_name][task_name] = score
             console.print(f"[bold]{score:.3f}[/bold]")
 

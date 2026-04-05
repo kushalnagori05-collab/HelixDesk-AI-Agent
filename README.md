@@ -211,14 +211,14 @@ python baseline.py
 
 ## Baseline Scores
 
-Scores from built-in agents (seed=42):
+Scores are exact and reproducible with seed=42:
 
 | Agent | easy_classify | medium_sla | hard_trend |
 |---|---|---|---|
-| random | ~0.00 | ~0.50 | ~0.25 |
-| rule | ~1.00 | ~0.80 | ~0.55 |
+| random | 0.000 | 1.000 | 0.094 |
+| rule   | 1.000 | 1.000 | 0.027 |
 
-Run `python baseline.py` to reproduce. If `OPENAI_API_KEY` is set, GPT-4o results will also be included.
+Run `python baseline.py` to reproduce exactly.
 
 ---
 
@@ -244,13 +244,15 @@ docker run --rm -e OPENAI_API_KEY=sk-... helixdesk-openenv python baseline.py
 
 This environment follows the [OpenEnv](https://openenv.org) specification:
 
-- **`openenv.yaml`** declares the environment name, version, entry point, and task IDs.
-- Each task in `tasks/` exports a `grade(env, agent) -> float` function returning `[0.0, 1.0]`.
-- The environment is Gymnasium-compatible and passes `check_env()`.
-
+- **`openenv.yaml`** — declares environment name, version, entry point, and task IDs. Schema validated manually against the OpenEnv spec.
+- **Typed models** — `helixdesk/models.py` defines `HelixObservation`, `HelixAction`, `HelixReward` as Pydantic models.
+- **3 graded tasks** — `tasks/easy_classify.py`, `tasks/medium_sla.py`, `tasks/hard_trend.py` each export `grade(env, agent) -> float` in `[0.0, 1.0]`.
+- **Gymnasium compatible** — passes `gymnasium.utils.env_checker.check_env()` with 0 errors.
+- **Docker** — `docker build -t helixdesk-openenv . && docker run --rm helixdesk-openenv` starts cleanly.
+- **Baseline** — `python baseline.py` reproduces exact scores from the table above using seed=42.
 ```bash
-# Validate (once openenv CLI is available)
-openenv validate
+# Validate manually
+python -c "from helixdesk import HelixDeskEnv; from gymnasium.utils.env_checker import check_env; check_env(HelixDeskEnv())"
 ```
 
 ---

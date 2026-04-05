@@ -26,6 +26,7 @@ def grade(env: HelixDeskEnv | None = None, agent=None) -> float:
         env = HelixDeskEnv()
 
     obs, info = env.reset(seed=42)
+    env.action_space.seed(42)  # seed action space for deterministic random agent
     keyword_total = 0
     keyword_correct = 0
 
