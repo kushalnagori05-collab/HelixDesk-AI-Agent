@@ -249,7 +249,15 @@ pytest tests/ -v
 
 ---
 
+## HuggingFace Space
+
+Live demo: https://huggingface.co/spaces/nottherajyk/helixdesk-openenv
+
+The Space runs the rule-based and random agents interactively in your browser.
+No install required.
+
+---
+
 ## License
 
 MIT
-
