@@ -13,9 +13,13 @@ from openai import OpenAI
 from helixdesk import HelixDeskEnv
 from helixdesk.agents import RuleAgent
 
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY") or os.getenv("OPENAI_API_KEY")
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
+HF_TOKEN = os.getenv("HF_TOKEN")
+
+# Optional - if you use from_docker_image():
+LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
+
 TASK_NAME = os.getenv("HELIXDESK_TASK", "medium_sla")
 BENCHMARK = "helixdesk-openenv"
 MAX_STEPS = 100
@@ -113,9 +117,9 @@ def main() -> None:
     env = HelixDeskEnv()
     obs, info = env.reset(seed=42)
 
-    use_llm = bool(API_KEY)
+    use_llm = bool(HF_TOKEN)
     if use_llm:
-        client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
+        client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
     
     # Build agent for task grading
     if use_llm:
