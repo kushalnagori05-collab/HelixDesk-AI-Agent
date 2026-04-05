@@ -1,3 +1,17 @@
+---
+title: HelixDesk OpenEnv
+emoji: 📧
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+tags:
+  - openenv
+  - reinforcement-learning
+  - gymnasium
+  - customer-support
+---
+
 # HelixDesk OpenEnv
 
 **HelixDesk OpenEnv** is a complete, real-world Gymnasium-style reinforcement learning environment where an AI agent named HelixDesk learns to manage customer email queues by interacting with a realistic simulation of a company's complaint management system. It is fully compatible with standard RL libraries including Stable-Baselines3, RLlib, and CleanRL.
