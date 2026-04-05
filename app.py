@@ -1,26 +1,67 @@
 """
-HelixDesk OpenEnv — Gradio HuggingFace Spaces Dashboard.
+HelixDesk OpenEnv — Standard API Server + Gradio Dashboard.
 
-Single-screen interactive demo: run episodes with rule/random agents,
-view reward and queue depth charts, and episode summary stats.
+Required for hackathon submission:
+1. Provides a visual Gradio UI at root "/" for manual review.
+2. Exposes /api/health, /reset, /step, /state endpoints for automated evaluation.
 """
 
 from __future__ import annotations
-
+import os
+import numpy as np
 import pandas as pd
-import gradio as gr
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+import gradio as gr
+from pydantic import BaseModel
+from typing import List, Optional, Any
 
 from helixdesk import HelixDeskEnv
 from helixdesk.agents import RuleAgent, RandomAgent
 
+# Initialize global env for API
+env = HelixDeskEnv()
 
-# ---------------------------------------------------------------------------
-# Chart styling
-# ---------------------------------------------------------------------------
+# --- FastAPI Setup ---
+app = FastAPI(title="HelixDesk OpenEnv API")
+
+# Health endpoint — NOT on "/" so Gradio can own the root
+@app.get("/api/health")
+@app.get("/health")
+async def health():
+    return {"status": "ok", "env": "HelixDesk OpenEnv", "version": "1.0.0"}
+
+@app.post("/reset")
+async def reset():
+    obs, info = env.reset()
+    return {
+        "observation": obs.tolist(),
+        "info": {k: float(v) if isinstance(v, (np.float32, np.float64)) else v for k, v in info.items()}
+    }
+
+class StepRequest(BaseModel):
+    action: List[int]
+
+@app.post("/step")
+async def step(req: StepRequest):
+    obs, reward, terminated, truncated, info = env.step(req.action)
+    return {
+        "observation": obs.tolist(),
+        "reward": float(reward),
+        "terminated": bool(terminated),
+        "truncated": bool(truncated),
+        "info": {k: float(v) if isinstance(v, (np.float32, np.float64)) else v for k, v in info.items()}
+    }
+
+@app.get("/state")
+async def get_state():
+    obs = env.state()
+    return {"observation": obs.tolist()}
+
+# --- Chart styling ---
 plt.rcParams.update({
     "figure.facecolor": "#f8f9fa",
     "axes.facecolor": "#ffffff",
@@ -35,45 +76,37 @@ plt.rcParams.update({
     "font.size": 11,
 })
 
-
+# --- Gradio UI Logic ---
 def run_episode(agent_type: str) -> tuple:
     """Run a full episode and return chart figures + summary markdown."""
-    env = HelixDeskEnv()
-
+    local_env = HelixDeskEnv()
     if agent_type == "rule":
-        agent = RuleAgent(env.observation_space, env.action_space)
+        agent = RuleAgent(local_env.observation_space, local_env.action_space)
     else:
-        agent = RandomAgent(env.observation_space, env.action_space)
+        agent = RandomAgent(local_env.observation_space, local_env.action_space)
 
-    obs, info = env.reset(seed=42)
+    obs, info = local_env.reset(seed=42)
     agent.reset()
 
-    steps = []
-    cumulative_rewards = []
-    queue_depths = []
-    overdue_counts = []
-    csat_scores = []
-
+    steps, cumulative_rewards = [], []
+    queue_depths, overdue_counts, csat_scores = [], [], []
     ep_reward = 0.0
     done = False
-
     while not done:
         action = agent.act(obs)
-        obs, reward, terminated, truncated, info = env.step(action)
+        obs, reward, terminated, truncated, info = local_env.step(action)
         ep_reward += reward
         done = terminated or truncated
-
         step_num = info.get("step", 0)
         steps.append(step_num)
         cumulative_rewards.append(ep_reward)
         queue_depths.append(info.get("queue_depth", 0))
         overdue_counts.append(info.get("overdue_count", 0))
-
         csat = info.get("csat_score")
         if csat is not None:
             csat_scores.append(float(csat))
 
-    env.close()
+    local_env.close()
 
     # --- Reward chart ---
     fig_reward, ax_reward = plt.subplots(figsize=(7, 3.5))
@@ -119,19 +152,19 @@ def run_episode(agent_type: str) -> tuple:
 # Startup verification
 # ---------------------------------------------------------------------------
 print("HelixDesk OpenEnv — verifying environment...")
-env = HelixDeskEnv()
-agent = RuleAgent(env.observation_space, env.action_space)
-obs, _ = env.reset(seed=0)
+_env = HelixDeskEnv()
+_agent = RuleAgent(_env.observation_space, _env.action_space)
+_obs, _ = _env.reset(seed=0)
 for _ in range(5):
-    action = agent.act(obs)
-    obs, _, terminated, _, _ = env.step(action)
-    if terminated:
+    _action = _agent.act(_obs)
+    _obs, _, _terminated, _, _ = _env.step(_action)
+    if _terminated:
         break
-env.close()
+_env.close()
 print("Environment verified ✓")
 
 # ---------------------------------------------------------------------------
-# Gradio UI
+# Create Gradio interface
 # ---------------------------------------------------------------------------
 initial_reward, initial_queue, initial_summary = run_episode("rule")
 
@@ -171,5 +204,9 @@ The rule-based agent uses 6 deterministic business rules; the random agent sampl
         outputs=[reward_plot, queue_plot, summary_md],
     )
 
+# Mount Gradio into FastAPI at root path
+app = gr.mount_gradio_app(app, demo, path="/")
+
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=7860)
