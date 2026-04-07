@@ -1,5 +1,10 @@
+spec_version: 1
 name: HelixDesk OpenEnv
 version: 1.0.0
+type: space
+runtime: fastapi
+app: server.app:app
+port: 7860
 task: customer-support-triage
 tags: [openenv]
 entry_point: helixdesk.env:HelixDeskEnv

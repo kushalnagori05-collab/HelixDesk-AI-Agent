@@ -6,8 +6,6 @@ resolved within their SLA deadline.
 
 from __future__ import annotations
 
-from helixdesk import HelixDeskEnv
-
 def grade(env, agent) -> float:
     obs, info = env.reset(seed=42)
     env.action_space.seed(42)

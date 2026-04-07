@@ -32,7 +32,7 @@ app = FastAPI(title="HelixDesk OpenEnv API")
 @app.get("/api/health")
 @app.get("/health")
 async def health():
-    return {"status": "ok", "env": "HelixDesk OpenEnv", "version": "1.0.0"}
+    return {"status": "healthy", "env": "HelixDesk OpenEnv", "version": "1.0.0"}
 
 @app.post("/reset")
 async def reset():
@@ -161,7 +161,7 @@ for _ in range(5):
     if _terminated:
         break
 _env.close()
-print("Environment verified ✓")
+print("Environment verified OK")
 
 # ---------------------------------------------------------------------------
 # Create Gradio interface

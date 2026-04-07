@@ -8,8 +8,6 @@ Run one full episode (100 emails). Score = average of three components:
 
 from __future__ import annotations
 
-from helixdesk import HelixDeskEnv
-
 def grade(env, agent) -> float:
     obs, info = env.reset(seed=42)
     env.action_space.seed(42)

@@ -8,23 +8,18 @@ from __future__ import annotations
 
 import numpy as np
 
-from helixdesk import HelixDeskEnv
 
-
-def grade(env: HelixDeskEnv | None = None, agent=None) -> float:
+def grade(env, agent) -> float:
     """Grade the agent on keyword-flag classification.
 
     Args:
-        env: Optional pre-built env. If None, creates one with default config.
+        env: A HelixDesk environment instance.
         agent: Must implement .act(obs) -> action array.
 
     Returns:
         Score in [0.0, 1.0]: fraction of keyword-flagged emails correctly
         classified as complaint with critical priority.
     """
-    if env is None:
-        env = HelixDeskEnv()
-
     obs, info = env.reset(seed=42)
     env.action_space.seed(42)  # seed action space for deterministic random agent
     keyword_total = 0
@@ -49,7 +44,7 @@ def grade(env: HelixDeskEnv | None = None, agent=None) -> float:
         if terminated or truncated:
             break
 
-    env.close()
+
 
     if keyword_total == 0:
         return 1.0  # No keyword emails to miss = perfect score
