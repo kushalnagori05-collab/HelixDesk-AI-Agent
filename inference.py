@@ -128,11 +128,14 @@ def main() -> None:
                 self.observation_space = obs_space
                 self.action_space = act_space
                 self._step = 0
+                self._cache = {}
             def reset(self):
                 self._step = 0
             def act(self, obs):
                 self._step += 1
-                return get_llm_action(client, obs, self._step)
+                if self._step not in self._cache:
+                    self._cache[self._step] = get_llm_action(client, obs, self._step)
+                return self._cache[self._step]
         agent = LLMAgent(env.observation_space, env.action_space)
     else:
         agent = RuleAgent(env.observation_space, env.action_space)
