@@ -316,7 +316,7 @@ class HelixDeskEnv(gymnasium.Env):
             "ticket_type": classification_map[classify],
             "priority": priority_label,
             "assigned_to": assign if assign < self._n_employees and classify == 1 else None,
-            "reward_breakdown": {ev.event_type: ev.value for ev in reward_events},
+            "reward_breakdown": [{"type": ev.event_type, "value": ev.value} for ev in reward_events],
             "queue_depth": len(self._queue),
             "overdue_count": overdue_count,
             "trend_alerts_active": len(trend_alerts),
