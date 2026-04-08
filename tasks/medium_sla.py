@@ -24,9 +24,9 @@ def grade(env, agent) -> float:
         if int(action[2]) < 5:  # 5 employees: indices 0-4
             total_assigned += 1
             
-        breakdown = info.get("reward_breakdown", {})
+        breakdown = info.get("reward_breakdown", [])
         for event in breakdown:
-            if event == "resolve_on_time":
+            if event["type"] == "resolve_on_time":
                 resolved_on_time += 1
     
     return resolved_on_time / max(total_assigned, 1)
