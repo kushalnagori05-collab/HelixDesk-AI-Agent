@@ -39,14 +39,14 @@ def grade(env, agent) -> float:
         episode_reward += reward
         total_steps += 1
 
-        breakdown = info.get("reward_breakdown", {})
+        breakdown = info.get("reward_breakdown", [])
         for event in breakdown:
-            if event == "keyword_flag_missed":
+            if event["type"] == "keyword_flag_missed":
                 keyword_missed += 1
-            if event == "correct_classification":
+            if event["type"] == "correct_classification":
                 correct_classifications += 1
                 total_classifications += 1
-            if event == "misclassification":
+            if event["type"] == "misclassification":
                 total_classifications += 1
 
         if action[0] == 2:
